@@ -1,0 +1,100 @@
+# --- 猜數字遊戲 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guess-v2-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      game: guess # 這裡要跟底下 template 一致
+  template:
+    metadata:
+      labels:
+        game: guess
+    spec:
+      containers:
+      - name: guess-game
+        image: samacr1981.azurecr.io/guess-game:v2
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guess-game-service
+spec:
+  ports:
+  - port: 80
+    targetPort: 5000
+  selector:
+    game: guess # 必須精準對應 Deployment 的 labels
+---
+# --- 4A2B 遊戲 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bc-v2-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      game: bc
+  template:
+    metadata:
+      labels:
+        game: bc
+    spec:
+      containers:
+      - name: bc-game
+        image: samacr1981.azurecr.io/bc-game:v2
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bc-game-service
+spec:
+  ports:
+  - port: 80
+    targetPort: 5000
+  selector:
+    game: bc
+---
+# --- Ingress ---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: games-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      # --- 新增這一段：讓健康檢查能找到你的程式 ---
+      - path: /healthz
+        pathType: Prefix
+        backend:
+          service:
+            name: guess-game-service
+            port:
+              number: 80
+      # ---------------------------------------
+      - path: /guess
+        pathType: Prefix
+        backend:
+          service:
+            name: guess-game-service
+            port:
+              number: 80
+      - path: /bulls-and-cows
+        pathType: Prefix
+        backend:
+          service:
+            name: bc-game-service
+            port:
+              number: 80
