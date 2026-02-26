@@ -83,3 +83,43 @@ kubectl get pods
 - **Error: Azure CLI is not installed**: 請確認您已安裝 `az` 並加入系統路徑。
 - **Login failed**: 如果 ACR 登入失敗，請確認您有足夠的權限，並且 ACR 名稱正確。
 - **Pending External IP**: Azure LoadBalancer 分配 IP 可能需要幾分鐘，請耐心等待。
+
+## 自動化部署 (GitHub Actions)
+
+我們已經設定好 GitHub Actions workflow，當程式碼推送到 `main` 分支時，會自動觸發部署流程。
+
+為了讓 GitHub Actions 能夠存取您的 Azure 資源，您需要在 GitHub Repository 的 **Settings > Secrets and variables > Actions** 中設定以下 Secrets：
+
+1.  **`ACR_NAME`**: 您的 Azure Container Registry 名稱 (例如 `myacr`)。
+2.  **`RESOURCE_GROUP`**: AKS 所在的資源群組名稱。
+3.  **`AKS_CLUSTER`**: 您的 AKS 叢集名稱。
+4.  **`AZURE_CREDENTIALS`**: 用於 Azure 登入的 Service Principal JSON。
+
+### 如何取得 `AZURE_CREDENTIALS`
+
+請使用 Azure CLI 執行以下指令來建立 Service Principal 並取得憑證 JSON：
+
+```bash
+# 請替換 <subscription-id> 為您的訂閱 ID
+# 請替換 <resource-group> 為您的資源群組名稱
+az ad sp create-for-rbac --name "my-github-actions-sp" --role contributor --scopes /subscriptions/<subscription-id>/resourceGroups/<resource-group> --sdk-auth
+```
+
+執行後，您會得到類似以下的 JSON 輸出：
+
+```json
+{
+  "clientId": "...",
+  "clientSecret": "...",
+  "subscriptionId": "...",
+  "tenantId": "...",
+  "activeDirectoryEndpointUrl": "...",
+  "resourceManagerEndpointUrl": "...",
+  "activeDirectoryGraphResourceId": "...",
+  "sqlManagementEndpointUrl": "...",
+  "galleryEndpointUrl": "...",
+  "managementEndpointUrl": "..."
+}
+```
+
+請複製整個 JSON 內容，並將其貼上到 GitHub Repository Secret 的 `AZURE_CREDENTIALS` 值中。
