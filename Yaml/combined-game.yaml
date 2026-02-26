@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: game-center
-        image: samacr1981.azurecr.io/game-center:v1 # Placeholder image name
+        image: REPLACE_ME_IMAGE_NAME # Placeholder image name
         ports:
         - containerPort: 5000
         resources:
@@ -31,6 +31,19 @@ kind: Service
 metadata:
   name: game-center-service
 spec:
+  ports:
+  - port: 80
+    targetPort: 5000
+  selector:
+    app: game-center
+---
+# --- LoadBalancer Service (For direct access) ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: game-center-lb
+spec:
+  type: LoadBalancer
   ports:
   - port: 80
     targetPort: 5000
