@@ -1,0 +1,58 @@
+# --- Combined Game Deployment ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-center-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: game-center
+  template:
+    metadata:
+      labels:
+        app: game-center
+    spec:
+      containers:
+      - name: game-center
+        image: samacr1981.azurecr.io/game-center:v1 # Placeholder image name
+        ports:
+        - containerPort: 5000
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: game-center-service
+spec:
+  ports:
+  - port: 80
+    targetPort: 5000
+  selector:
+    app: game-center
+---
+# --- Ingress ---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: game-center-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: game-center-service
+            port:
+              number: 80
