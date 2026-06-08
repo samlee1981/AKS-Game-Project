@@ -25,9 +25,7 @@ az login
 
 ## 步驟 2: 執行部署腳本
 
-我們提供了自動化腳本來簡化流程。請根據您的作業系統選擇執行方式：
-
-### Linux / macOS
+我們提供了一個自動化腳本 `deploy_aks.sh` 來簡化流程。請依照以下步驟執行：
 
 1.  確保腳本具有執行權限（如果您尚未設定）：
     ```bash
@@ -39,18 +37,7 @@ az login
     ./deploy_aks.sh
     ```
 
-### Windows (PowerShell)
-
-1.  開啟 PowerShell。
-
-2.  執行腳本：
-    ```powershell
-    .\deploy_aks.ps1
-    ```
-
-### 腳本執行說明
-
-腳本執行過程中會要求您輸入以下資訊：
+3.  腳本執行過程中會要求您輸入以下資訊：
     - **Azure Container Registry (ACR) name**: 您的容器登錄名稱（例如 `myacr`，不包含 `.azurecr.io`）。
     - **Resource Group name**: AKS 所在的資源群組名稱。
     - **AKS Cluster name**: 您的 AKS 叢集名稱。
